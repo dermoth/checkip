@@ -36,5 +36,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprint(w, r.RemoteAddr, "\n")
+
+	// This lists all headers...
+	for key, val := range r.Header {
+		fmt.Fprintf(w, "%s: %s\n", key, val)
+	}
 }
 
