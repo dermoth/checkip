@@ -21,6 +21,7 @@ package checkip
 
 import (
 	"fmt"
+	"strings"
 	"net/http"
 )
 
@@ -35,6 +36,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Expires", "0")
 
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprint(w, r.RemoteAddr, "\n")
+	/* XFF is only used in dev mode (we don't use load balancers), and
+	 * even then it's hard to differenciate between what's sent by the
+	 * user/proxy and intermediates... Best would be to take first
+	 * element and thus trust XFF's added by proxies! Commented out
+	 * for that reason
+	*/
+	xff, xffPresent := r.Header["X-Forwarded-For"]
+	if xffPresent {
+		// Just use the first header (closest one)
+		fmt.Fprint(w, strings.Split(xff[0], ", ")[0], "\n")
+	} else {
+		fmt.Fprint(w, r.RemoteAddr, "\n")
+	}
 }
 
