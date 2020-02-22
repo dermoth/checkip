@@ -17,15 +17,28 @@
  * limitations under the License.
  */
 
-package checkip
+package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 )
 
-func init() {
+func main() {
 	http.HandleFunc("/", handler)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("Defaulting to port %s", port)
+	}
+
+	log.Printf("Listening on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +48,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Expires", "0")
 
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprint(w, r.RemoteAddr, "\n")
+	//fmt.Fprint(w, r.RemoteAddr, "\n") // go <=1.9; No longer works with 112
+	fmt.Fprint(w, r.Header.Get("X-Appengine-User-Ip"), "\n")
 }
 
